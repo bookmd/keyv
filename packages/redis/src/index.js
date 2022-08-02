@@ -18,8 +18,8 @@ class KeyvRedis extends EventEmitter {
 		this.redis.on('error', error => this.emit('error', error));
 	}
 
-	_getNamespace() {
-		return `namespace:${this.namespace}`;
+	_getKeysSetName() {
+		return `${this.namespace}:keys.ctl`;
 	}
 
 	get(key) {
@@ -52,13 +52,13 @@ class KeyvRedis extends EventEmitter {
 				return this.redis.set(key, value);
 			})
 			.then(() => {
-				this.redis.sadd(this._getNamespace(), key);
+				this.redis.sadd(this._getKeysSetName(), key);
 			});
 	}
 
 	delete(key) {
 		return this.redis.del(key)
-			.then(items => this.redis.srem(this._getNamespace(), key)
+			.then(items => this.redis.srem(this._getKeysSetName(), key)
 				.then(() => items > 0));
 	}
 
@@ -67,8 +67,8 @@ class KeyvRedis extends EventEmitter {
 	}
 
 	clear() {
-		return this.redis.smembers(this._getNamespace())
-			.then(keys => this.redis.del([...keys, ...this._getNamespace()]))
+		return this.redis.smembers(this._getKeysSetName())
+			.then(keys => this.redis.del([...keys, ...this._getKeysSetName()]))
 			.then(() => undefined);
 	}
 
